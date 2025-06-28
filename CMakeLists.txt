@@ -38,6 +38,7 @@ set(HEADERS
   include/objects/keywords/define.h
   include/objects/keywords/set.h
   include/objects/keywords/if.h
+  include/objects/keywords/lambda.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})

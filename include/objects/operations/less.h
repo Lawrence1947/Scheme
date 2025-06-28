@@ -3,6 +3,7 @@
 
 #include <array>
 
+#include <scheme.h>
 #include <objects/types/function.h>
 #include <objects/types/number.h>
 #include <objects/types/bool.h>
@@ -11,7 +12,8 @@ class Less : public Function {
 public:
   Less() : Function("<") {}
 
-  std::shared_ptr<Object> Apply(const std::vector<std::shared_ptr<Object>> arguments, std::shared_ptr<Scope> scope) const override {
+  std::shared_ptr<Object> Apply(const std::vector<std::shared_ptr<Object>> arguments, 
+                                std::shared_ptr<Scope> scope, const Scheme *scheme) const override {
     if (arguments.size() < 2) {
       throw SyntaxError{NOT_ENOUGH_ARGUMENTS};
     }
@@ -22,7 +24,7 @@ public:
 
     std::array<std::shared_ptr<Object>, 2> params;
     for (size_t i = 0; i < 2; ++i) {
-      params[i] = arguments[i];
+      params[i] = scheme->EvaluateObject(arguments[i], scope);
       if (Is<Symbol>(params[i])) {
         params[i] = scope->GetObject(std::static_pointer_cast<Symbol>(params[i])->GetName());
       }

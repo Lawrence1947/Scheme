@@ -33,6 +33,7 @@
 #include <objects/keywords/define.h>
 #include <objects/keywords/set.h>
 #include <objects/keywords/if.h>
+#include <objects/keywords/lambda.h>
 
 
 Scheme::Scheme() : scope_(std::make_shared<Scope>()) {
@@ -58,23 +59,23 @@ void Scheme::InitializeBaseLiterals() {
 }
 
 void Scheme::InitializeKeywords() {
+  // boolean
   syntax_list.emplace("boolean?", std::make_shared<BoolPredicate>());
   syntax_list.emplace("number?", std::make_shared<NumberPredicate>());
   syntax_list.emplace("and", std::make_shared<And>());
   syntax_list.emplace("or", std::make_shared<Or>());
   syntax_list.emplace("not", std::make_shared<Not>());
 
+  // control flow
   syntax_list.emplace("if", std::make_shared<If>());
 
+  // memory
   syntax_list.emplace("define", std::make_shared<Define>());
   syntax_list.emplace("set!", std::make_shared<Set>());
+  syntax_list.emplace("lambda", std::make_shared<Lambda>());
 }
 
-void Scheme::InitializeControlCommands() {
-
-}
-
-
+void Scheme::InitializeControlCommands() {}
 
 void Scheme::REPL(std::istream& in) const {
   std::string expression;
@@ -106,7 +107,7 @@ std::string Scheme::Evaluate(const std::string& expression) const {
     if (Is<Quote>(list)) {
       FlushIfQuote(result, &tokenizer);
     } else {
-      std::shared_ptr<Object> result_object = EvaluateList(list);
+      std::shared_ptr<Object> result_object = (Is<Cell>(list) ? EvaluateList(list, GetScope()) : EvaluatePureObject(list, GetScope()));
       if (Is<Null>(result_object)) continue;
       result += (result_object ? result_object->ToString() : "()");
     }
@@ -116,69 +117,47 @@ std::string Scheme::Evaluate(const std::string& expression) const {
   return result;
 }
 
-std::shared_ptr<Object> Scheme::EvaluateList(std::shared_ptr<Object> list) const {
-  if (!Is<Cell>(list)) {
-    return EvaluatePureObject(list);
-  }
-
+std::shared_ptr<Object> Scheme::EvaluateList(std::shared_ptr<Object> list, std::shared_ptr<Scope> scope) const {
   std::vector<std::shared_ptr<Object>> arguments;
   std::shared_ptr<Cell> cell = std::static_pointer_cast<Cell>(list);
-  std::shared_ptr<Object> function = EvaluateObject(cell->GetFirst());
-  if (Is<If>(function)) {
-    return EvaluateIf(cell);
-  }
+  std::shared_ptr<Object> function = EvaluateObject(cell->GetFirst(), scope);
   while (cell->GetSecond()) {
     if (!Is<Cell>(cell->GetSecond())) {
       throw SyntaxError{};
     }
     std::shared_ptr<Cell> next_cell = std::static_pointer_cast<Cell>(cell->GetSecond());
-    arguments.push_back(EvaluateObject(next_cell->GetFirst()));
+    arguments.push_back(next_cell->GetFirst());
     cell = next_cell;
   }
 
-  return function->Apply(arguments, scope_);
+  return function->Apply(arguments, scope, this);
 }
 
-std::shared_ptr<Object> Scheme::EvaluateObject(std::shared_ptr<Object> object) const {
+std::shared_ptr<Object> Scheme::EvaluateObject(std::shared_ptr<Object> object, std::shared_ptr<Scope> scope) const {
   if (!object) {
     return nullptr;
   }
-  if (Is<Number>(object)) {
+  if (Is<Number>(object) || Is<LambdaEval>(object)) {
     return object;
   }
   if (Is<Symbol>(object)) {
-    return GetEvaluatedSymbol(std::static_pointer_cast<Symbol>(object));
+    return GetEvaluatedSymbol(std::static_pointer_cast<Symbol>(object), scope);
   }
   if (Is<Cell>(object)) {
-    return EvaluateList(object);
+    return EvaluateList(object, scope);
   }
   throw RuntimeError{EVAL_OBJECT};
   return nullptr;
 }
 
-std::shared_ptr<Object> Scheme::EvaluateIf(std::shared_ptr<Cell> if_list) const {
-  std::vector<std::shared_ptr<Object>> arguments;
-  std::shared_ptr<Object> if_function = EvaluateObject(if_list->GetFirst());
-  if (!Is<Cell>(if_list->GetSecond())) {
-    throw SyntaxError{IF_SYNTAX};
-  }
-  std::shared_ptr<Cell> cell = std::static_pointer_cast<Cell>(if_list->GetSecond());
-  arguments.push_back(EvaluateObject(cell->GetFirst()));
-  while (cell->GetSecond()) {
-    if (!Is<Cell>(cell->GetSecond())) {
-      throw SyntaxError{IF_SYNTAX};
-    }
-    std::shared_ptr<Cell> next_cell = std::static_pointer_cast<Cell>(cell->GetSecond());
-    arguments.push_back(next_cell->GetFirst());
-    cell = next_cell;
-  }
-  return EvaluateObject(if_function->Apply(arguments, scope_));
-}
-
-std::shared_ptr<Object> Scheme::EvaluatePureObject(std::shared_ptr<Object> object) const {
+std::shared_ptr<Object> Scheme::EvaluatePureObject(std::shared_ptr<Object> object, std::shared_ptr<Scope> scope) const {
+  object = EvaluateObject(object, scope);
   if (Is<Symbol>(object)) {
+    if (Is<Bool>(object) || Is<Lambda>(object)) {
+      return object;
+    }
     std::string name = std::static_pointer_cast<Symbol>(object)->GetName();
-    std::shared_ptr<Object> dereference = scope_->GetObject(name);
+    std::shared_ptr<Object> dereference = scope->GetObject(name);
     if (dereference) {
       return dereference;
     }
@@ -187,12 +166,15 @@ std::shared_ptr<Object> Scheme::EvaluatePureObject(std::shared_ptr<Object> objec
   return object;
 }
 
-std::shared_ptr<Object> Scheme::GetEvaluatedSymbol(std::shared_ptr<Symbol> symbol) const {
+std::shared_ptr<Object> Scheme::GetEvaluatedSymbol(std::shared_ptr<Symbol> symbol, std::shared_ptr<Scope> scope) const {
   auto it = syntax_list.find(symbol->GetName());
   if (it != syntax_list.end()) {
     return it->second;
   }
-
+  std::shared_ptr<Object> dereference = scope->GetObject(symbol->GetName());
+  if (dereference) {
+    return dereference;
+  }
   return symbol;
 }
 

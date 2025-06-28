@@ -6,6 +6,8 @@
 #include <objects/object.h>
 #include <error.h>
 
+class Scheme;
+
 class Cell : public Object {
 public:
   explicit Cell(std::shared_ptr<Object> first, std::shared_ptr<Object> second) : first_(std::move(first)), second_(std::move(second)) {}
@@ -14,7 +16,8 @@ public:
   std::shared_ptr<Object> GetSecond() const { return second_; }
 
   std::shared_ptr<Object> Apply([[maybe_unused]] const std::vector<std::shared_ptr<Object>> arguments, 
-                                [[maybe_unused]] std::shared_ptr<Scope> scope) const { throw RuntimeError{NO_OVERRIDE_CELL}; }
+                                [[maybe_unused]] std::shared_ptr<Scope> scope, [[maybe_unused]] const Scheme *scheme) const 
+                                  { throw RuntimeError{NO_OVERRIDE_CELL}; }
 
   std::string ToString() const override {
     std::string result = "(";

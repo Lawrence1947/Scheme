@@ -11,6 +11,7 @@
 #define ALREADY_DEFINED "Object has already defined.\n"
 #define NOT_YET_DEFINED "Object is not defined.\n"
 #define IF_SYNTAX "Invalid if-statement syntax.\n"
+#define LAMBDA_SYNTAX "Invalid lambda syntax.\n"
 
 // Runtime errors
 #define FPE "Floating point exception.\n"
@@ -20,6 +21,8 @@
 #define NO_OVERRIDE_SCOPE "Scope apply function shouldn't be called.\n"
 #define NO_OVERRIDE_BOOL "Bool apply function shouldn't be called.\n"
 #define NO_OVERRIDE_CELL "Cell apply function shouldn't be called.\n"
+#define NO_OVERRIDE_LAMBDA_EVAL "Lambda-eval ToString function shouldn't be called.\n"
+#define LAMBDA_EVAL "Couldn't evaluate lambda-function.\n"
 
 class SyntaxError : public std::runtime_error {
 public:

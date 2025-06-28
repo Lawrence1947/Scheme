@@ -8,9 +8,13 @@
 #include <objects/object.h>
 #include <error.h>
 
+class Scheme;
+
 class Scope : public Object {
 public:
   Scope() = default;
+
+  size_t Size() { return scope_.size(); }
 
   void Cache(const std::string& name, std::shared_ptr<Object> object) {
     auto it = scope_.find(name);
@@ -41,7 +45,8 @@ public:
   std::string ToString() const override { throw RuntimeError{}; }
 
   std::shared_ptr<Object> Apply([[maybe_unused]] const std::vector<std::shared_ptr<Object>> arguments, 
-                                [[maybe_unused]] std::shared_ptr<Scope> scope) const { throw RuntimeError{NO_OVERRIDE_SCOPE}; }
+                                [[maybe_unused]] std::shared_ptr<Scope> scope, [[maybe_unused]] const Scheme *scheme) const override 
+                                  { throw RuntimeError{NO_OVERRIDE_SCOPE}; }
 
 private:
   std::unordered_map<std::string, std::shared_ptr<Object>> scope_;

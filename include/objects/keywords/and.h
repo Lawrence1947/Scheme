@@ -1,6 +1,7 @@
 #ifndef AND_H
 #define AND_H
 
+#include <scheme.h>
 #include <objects/types/symbol.h>
 #include <objects/types/bool.h>
 
@@ -8,8 +9,10 @@ class And : public Symbol {
 public:
   And() : Symbol("and") {}
 
-  std::shared_ptr<Object> Apply(const std::vector<std::shared_ptr<Object>> arguments, std::shared_ptr<Scope> scope) const override {
+  std::shared_ptr<Object> Apply(const std::vector<std::shared_ptr<Object>> arguments, 
+                                std::shared_ptr<Scope> scope, const Scheme *scheme) const override {
     for (std::shared_ptr<Object> object : arguments) {
+      object = scheme->EvaluateObject(object, scope);
       if (Is<Symbol>(object)) {
         object = scope->GetObject(std::static_pointer_cast<Symbol>(object)->GetName());
       }

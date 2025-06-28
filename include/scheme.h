@@ -19,6 +19,12 @@ public:
 
   void REPL(std::istream& in) const;
 
+  std::shared_ptr<Scope> GetScope() const { return scope_; }
+
+  // Public so we can optimize evaluation in apply methods
+  std::shared_ptr<Object> EvaluateObject(std::shared_ptr<Object> object, std::shared_ptr<Scope> scope) const;
+  std::shared_ptr<Object> EvaluatePureObject(std::shared_ptr<Object> object, std::shared_ptr<Scope> scope) const;
+
 private:
   void InitializeBaseOperations();
   void InitializeBaseLiterals();
@@ -27,15 +33,10 @@ private:
 
   void FlushIfQuote(std::string& result_str, Tokenizer* tokenizer) const;
 
-  std::shared_ptr<Scope> GetScope() { return scope_; }
-
   std::string Evaluate(const std::string& expression) const;
-  std::shared_ptr<Object> EvaluateList(std::shared_ptr<Object> list) const;
-  std::shared_ptr<Object> EvaluateObject(std::shared_ptr<Object> object) const;
+  std::shared_ptr<Object> EvaluateList(std::shared_ptr<Object> list, std::shared_ptr<Scope> scope) const;
 
-  std::shared_ptr<Object> EvaluateIf(std::shared_ptr<Cell> if_list) const;
-  std::shared_ptr<Object> EvaluatePureObject(std::shared_ptr<Object> object) const;
-  std::shared_ptr<Object> GetEvaluatedSymbol(std::shared_ptr<Symbol> symbol) const;
+  std::shared_ptr<Object> GetEvaluatedSymbol(std::shared_ptr<Symbol> symbol, std::shared_ptr<Scope> scope) const;
 
 private:
   std::map<std::string, std::shared_ptr<Object>> syntax_list;
