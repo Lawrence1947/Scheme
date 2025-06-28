@@ -5,18 +5,18 @@
 
 #include <tokenizer.h>
 #include <objects/object.h>
-#include <objects/number.h>
-#include <objects/symbol.h>
-#include <objects/cell.h>
-#include <objects/quote.h>
-#include <objects/dot.h>
+#include <objects/specials/quote.h>
+#include <objects/specials/dot.h>
+#include <objects/types/symbol.h>
+#include <objects/types/cell.h>
+#include <objects/types/number.h>
 #include <error.h>
 
 bool NextTokenIsNotOpenCell(Tokenizer* tokenizer);
 std::shared_ptr<Object> ParseList(Tokenizer* tokenizer);
 
 std::shared_ptr<Object> Parse(Tokenizer* tokenizer) {
-  if (tokenizer->IsEnd()) { throw SyntaxError{}; }
+  if (tokenizer->IsEnd()) { throw SyntaxError{UNFINISHED_EXPRESSION}; }
 
   Token curr_token = tokenizer->GetToken();
   tokenizer->Next();
@@ -31,7 +31,7 @@ std::shared_ptr<Object> Parse(Tokenizer* tokenizer) {
   
   if (auto* bracket = std::get_if<BracketToken>(&curr_token)) {
     if (*bracket == BracketToken::OPEN) {
-      if (tokenizer->IsEnd()) { throw SyntaxError{}; }
+      if (tokenizer->IsEnd()) { throw SyntaxError{UNFINISHED_EXPRESSION}; }
       return ParseList(tokenizer);
     }
     return nullptr;
@@ -45,7 +45,7 @@ std::shared_ptr<Object> Parse(Tokenizer* tokenizer) {
     return std::make_shared<Dot>();
   }
 
-  throw SyntaxError{};
+  throw SyntaxError{UNFINISHED_EXPRESSION};
   return nullptr;
 }
 
@@ -59,7 +59,7 @@ std::shared_ptr<Object> ParseList(Tokenizer* tokenizer) {
   if (Is<Dot>(first)) {
     std::shared_ptr<Object> second = Parse(tokenizer);
     std::shared_ptr<Object> not_close_bracket = Parse(tokenizer);
-    if (not_close_bracket) { throw SyntaxError{}; }
+    if (not_close_bracket) { throw SyntaxError{UNFINISHED_EXPRESSION}; }
     return second;
   }
 

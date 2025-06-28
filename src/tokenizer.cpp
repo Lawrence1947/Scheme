@@ -25,7 +25,7 @@ void Tokenizer::TokenizeNumber(bool is_negative) {
 
 void Tokenizer::TokenizeName() {
   std::string name_str;
-  while (std::isalpha(in_->peek()) || strchr("-+!$%&*/:<=>?^_~", in_->peek())) {
+  while (std::isalpha(in_->peek()) || strchr("-+!$%&*/#:<=>?^_~", in_->peek())) {
     name_str += static_cast<char>(in_->get());
   }
 

@@ -17,11 +17,27 @@ set(HEADERS
   include/globals.h
   include/parser.h
   include/objects/object.h
-  include/objects/number.h
-  include/objects/symbol.h
-  include/objects/cell.h
-  include/objects/dot.h
-  include/objects/quote.h
+  include/objects/specials/dot.h
+  include/objects/specials/quote.h
+  include/objects/operations/addition.h
+  include/objects/operations/subtraction.h
+  include/objects/operations/multiplication.h
+  include/objects/operations/division.h
+  include/objects/operations/greater.h
+  include/objects/operations/less.h
+  include/objects/operations/equal.h
+  include/objects/types/symbol.h
+  include/objects/types/cell.h
+  include/objects/types/function.h
+  include/objects/types/number.h
+  include/objects/types/bool.h
+  include/objects/keywords/and.h
+  include/objects/keywords/or.h
+  include/objects/keywords/not.h
+  include/objects/keywords/bool_predicate.h
+  include/objects/keywords/define.h
+  include/objects/keywords/set.h
+  include/objects/keywords/if.h
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
