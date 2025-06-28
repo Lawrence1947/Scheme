@@ -82,12 +82,18 @@ void Scheme::REPL(std::istream& in) const {
   std::cout << "Scheme 1.0.0\n";
   std::cout << "This program is free software, and you are welcome to redistribute it.\n\n";
 
-  while (in) {
-    std::cout << ">>> ";
-    std::getline(in, expression);
+  bool is_interactive = (&in == &std::cin);
+
+  while (std::getline(in, expression)) {
+    if (is_interactive) {
+      std::cout << ">>> ";
+      std::cout.flush();
+    }
+    
     if (expression.empty()) {
       continue;
     }
+    
     try {
       std::cout << Evaluate(expression);
     } catch (const std::runtime_error& ex) {
