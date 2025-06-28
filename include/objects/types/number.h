@@ -7,7 +7,7 @@
 
 class Number : public Object {
 public:
-  explicit Number(int value) : value_(value) {}
+  explicit Number(int64_t value) : value_(value) {}
 
   int64_t GetValue() const { return value_; }
 

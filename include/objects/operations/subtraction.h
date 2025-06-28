@@ -22,7 +22,7 @@ public:
       throw SyntaxError{INVALID_TYPE}; 
     }
 
-    int64_t sub = std::static_pointer_cast<Number>(arguments.front())->GetValue();
+    int64_t sub = std::static_pointer_cast<Number>(object)->GetValue();
     for (size_t i = 1; i < arguments.size(); ++i) {
       object = scheme->EvaluateObject(arguments[i], scope);
       if (Is<Symbol>(object)) {
