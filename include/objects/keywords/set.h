@@ -19,13 +19,12 @@ public:
     if (arguments.size() > 2) {
       throw SyntaxError{TOO_MANY_ARGUMENTS};
     }
-    std::shared_ptr<Object> object = scheme->EvaluateObject(arguments.front(), scope);
-    if (!Is<Symbol>(object)) {
+    if (!Is<Symbol>(arguments.front())) {
       throw SyntaxError{INVALID_TYPE};
     }
     
     std::shared_ptr<Object> value = scheme->EvaluateObject(arguments.back(), scope);
-    scope->Rewrite(std::static_pointer_cast<Symbol>(object)->GetName(), scheme->EvaluatePureObject(value, scope));
+    scope->Rewrite(std::static_pointer_cast<Symbol>(arguments.front())->GetName(), scheme->EvaluatePureObject(value, scope));
     return std::make_shared<Null>();
   }
 };

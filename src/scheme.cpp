@@ -79,25 +79,24 @@ void Scheme::InitializeControlCommands() {}
 
 void Scheme::REPL(std::istream& in) const {
   std::string expression;
-  std::cout << "Scheme 1.0.0\n";
-  std::cout << "This program is free software, and you are welcome to redistribute it.\n\n";
-
   bool is_interactive = (&in == &std::cin);
-
-  while (std::getline(in, expression)) {
-    if (is_interactive) {
+  if (is_interactive) {
+      std::cout << "Scheme 1.0.0\n";
+      std::cout << "This program is free software, and you are welcome to redistribute it.\n\n";
       std::cout << ">>> ";
-      std::cout.flush();
-    }
-    
+  }
+  
+  while (std::getline(in, expression)) {
     if (expression.empty()) {
       continue;
     }
-    
     try {
       std::cout << Evaluate(expression);
     } catch (const std::runtime_error& ex) {
       std::cout << ex.what();
+    }
+    if (is_interactive) {
+      std::cout << ">>> ";
     }
   }
 }
@@ -172,7 +171,7 @@ std::shared_ptr<Object> Scheme::EvaluatePureObject(std::shared_ptr<Object> objec
   return object;
 }
 
-std::shared_ptr<Object> Scheme::GetEvaluatedSymbol(std::shared_ptr<Symbol> symbol, std::shared_ptr<Scope> scope) const {
+std::shared_ptr<Object> Scheme::GetEvaluatedSymbol(std::shared_ptr<Symbol> symbol, [[maybe_unused]] std::shared_ptr<Scope> scope) const {
   auto it = syntax_list.find(symbol->GetName());
   if (it != syntax_list.end()) {
     return it->second;

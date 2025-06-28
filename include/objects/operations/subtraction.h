@@ -31,6 +31,9 @@ public:
       if (!Is<Number>(object)) { 
         throw SyntaxError{INVALID_TYPE};
       }
+      if (std::static_pointer_cast<Number>(object)->GetValue() == 0) {
+        throw RuntimeError{FPE};
+      }
       sub -= std::static_pointer_cast<Number>(object)->GetValue();
     }
     return std::make_shared<Number>(sub);
